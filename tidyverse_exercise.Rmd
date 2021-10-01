@@ -20,14 +20,14 @@ Let's use `mtcars`, a built in dataset of cars and their miles/gallon (mpg), num
 mtcars
 ```
 
-**Exercise**: First, summarise the average miles/gallon (mpg) across the entire dataset. 
+First, summarise the average miles/gallon (mpg) across the entire dataset. 
 
 ```{r}
 mtcars |>
   summarise(...)
 ```
 
-**Exercise**: A car can either have 4, 6, or 8 cylinders (cyl). Summarise the average mpg, broken down by the number of cylinders. Hint: You may want to "group" by cyl in order to do this. 
+A car can either have 4, 6, or 8 cylinders (cyl). Summarise the average mpg, broken down by the number of cylinders. Hint: You may want to "group" by cyl in order to do this. 
 
 ```{r}
 mtcars |>
