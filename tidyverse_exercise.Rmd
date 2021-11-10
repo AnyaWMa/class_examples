@@ -16,6 +16,8 @@ Fill in the blanks! The symbol ... is meant to show you where your code should g
 
 Let's use `mtcars`, a built in dataset of cars and their miles/gallon (mpg), number of cylinders (cyl), displacement (disp), gross horsepower (hp), etc. 
 
+Run `mtcars` to take a brief look at the dataset:
+
 ```{r}
 mtcars
 ```
@@ -41,7 +43,7 @@ mtcars |>
   ...
 ```
 
-**BONUS**: Let's visualize! Use ggplot (included in the tidyverse package) to make a scatter plot of mpg by horsepower. If you are feeling extra fancy, you can add a smoothing line. (Hint: Google "geom_smooth() scatterplot".)
+**BONUS**: Let's visualize! Use ggplot (included in the tidyverse package) to make a scatter plot of mpg by horsepower (hp). If you are feeling extra fancy, you can add a smoothing line. (Hint: Google "geom_smooth() scatterplot".)
 
 ```{r}
 ggplot(mtcars, 
@@ -58,14 +60,14 @@ table3
 help(table3)
 ```
 
-`table3` is in tidy format. Make this into wide data by using `pivot_wider`.
+`table3` is in tidy format. Make this into wide data by using `pivot_wider`. (For more information on pivot_wider, try typing `?pivot_wider` in your console.)
 
 ```{r}
 table3_wide <- table3 |>
   pivot_wider(...) 
 ```
 
-Now make it back into tidy data using `pivot_longer`.
+Now make it back into tidy data using `pivot_longer`. (Again, for more information on pivot_longer, try typing `?pivot_longer` in your console.)
 
 ```{r}
 table3_long <- table3_wide |>
@@ -80,7 +82,7 @@ These are pre-post data on children's arithmetic scores from a RCT (Randomized C
 majic <- read_csv("data/majic.csv")
 ```
 
-Make these tidy. 
+Make these tidy. (Observations in 2015 and 2016 should now be in separate rows.)
 
 ```{r}
 majic_long <- majic |>
@@ -101,7 +103,7 @@ majic_summary |>
 **BONUS**: Let's visualize! Make a nice plot of these data. 
 
 ```{r}
-
+...
 ```
 
 
