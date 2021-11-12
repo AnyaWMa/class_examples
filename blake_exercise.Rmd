@@ -68,35 +68,3 @@ Make sure you understand what the design was: how many trials per participant, w
 
 In this second, explore the authors' hypotheses related to advantageous and inadvantageous inequity aversion. Create 1 - 3 pictures that describe the support (or lack of it) for this hypothesis. 
 
-```{r}
-ggplot(filter(d, !is.na(decision)), 
-       aes(x = actor.age.years, y = as.numeric(decision == "reject"), col = country)) + 
-  geom_jitter(alpha = .1, height = .05, width = .05) + 
-  facet_grid(trial_type ~ condition) + 
-  geom_smooth(method = "lm")
-```
-
-
-
-```{r}
-ms <- d %>%
-  filter(!is.na(eq.uneq)) %>%
-  mutate(age = actor.age.years, 
-         decision = decision == "reject") %>%
-  group_by(country, trial_type, condition, age, actor.id) %>%
-  summarise(mean = mean(decision, na.rm=TRUE))
-
-ms$country <- factor(ms$country, 
-                     levels = c("Uganda","US","Canada",
-                              "Senegal","India","Peru","Mexico"))
-
-ggplot(ms, aes(x = age, y = mean, col = condition)) + 
-  geom_jitter(alpha = .3, width = 0, height = .02) +
-  facet_grid(trial_type ~ country) + 
-  ylab("Proportion offers rejected") +
-  xlab("Age (years)") +
-  ylim(c(0,1)) + 
-  langcog::scale_colour_solarized() + 
-  theme_bw() + 
-  theme(legend.position = "bottom")
-```
