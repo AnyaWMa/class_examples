@@ -1,7 +1,7 @@
 ---
 title: "Meta-Analysis Demo"
 author: "Psych 251"
-date: "10/27/2020"
+date: "11/3/2021"
 output: html_document
 ---
 
@@ -20,9 +20,9 @@ You'd need to run this next chunk if you wanted to re-download the data from Met
 ```{r data, eval=FALSE}
 #devtools::install_github("langcog/metalabr")
 library(metalabr)
-ml_dataset_info <- get_metalab_dataset_info()
-d <- get_metalab_data(filter(ml_dataset_info, short_name == "mutex")) 
-d %>% 
+metadata <- get_metalab_metadata()
+metalab_data <- get_metalab_data(filter(metadata, short_name == "mutex"))
+metalab_data %>% 
   select(long_cite, short_cite, expt_num, n, d_calc, d_var_calc, 
          mean_age_months, year) %>%
   filter(mean_age_months <= 24) %>% # subset for ease

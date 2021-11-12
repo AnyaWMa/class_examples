@@ -7,7 +7,7 @@ output: html_document
   
 This is an in-class exercise on using `ggplot2`.
 
-Note, that this example is from the_grammar.R on [http://had.co.nz/ggplot2](). I've adapted this for psych 251 purposes
+Note, that this example is from the_grammar.R on [http://had.co.nz/ggplot2](). I've adapted this for psych 251 purposes.
 
 First install and load the package. It's part of the "core tidvyerse".
 
@@ -72,9 +72,17 @@ Try writing this as a single set of additions (e.g. one line of R code, though y
 
 
 ```{r}
-ggplot(...) + 
-  geom_point(...)
+ggplot(diamonds, aes(x = carat, y = price)) + 
+  geom_point(aes(colour = carat))
 ```
+
+
+```{r}
+ggplot(diamonds, aes(x = clarity, y = price)) + 
+  geom_jitter(alpha = .01) + 
+  stat_summary(fun.data = "mean_cl_boot", col = "red")
+```
+
 
 
 # Facets
@@ -82,16 +90,17 @@ ggplot(...) +
 Let's try out another version of the `qplot` example above. Rewrite the last qplot example with ggplot.
 
 ```{r}
-...
+ggplot(diamonds, aes(x = carat, y = price)) + 
+  geom_point(aes(colour = clarity))
 ```
 
 One of the primary benefits of `ggplot2` is the use of facets - also known as small multiples in the Tufte vocabulary. That last plot was probably hard to read. Facets could make it better. Try adding `facet_grid(x ~ y)`.  `x ~ y` means row facets are by `x`, column facets by `y`. 
 
 ```{r}
-ggplot(diamonds, 
-      aes(x = carat, y = price)) + 
-  geom_point() + 
-  ...
+ggplot(diamonds, aes(x = carat, y = price)) + 
+  geom_point(aes(colour = clarity), alpha = .1) + 
+  facet_grid(cut~color) 
+
 ```
 
 But facets can also get overwhelming. Try to strike a good balance between color, shape, and faceting.
