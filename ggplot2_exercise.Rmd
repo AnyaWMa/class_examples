@@ -1,7 +1,7 @@
 ---
 title: 'ggplot2 intro exercise'
 author: "Mike Frank"
-date: "November 10, 2021"
+date: "November 16, 2022"
 output: html_document
 ---
   
@@ -15,104 +15,85 @@ First install and load the package. It's part of the "core tidvyerse".
 library(tidyverse)
 ```
 
-# Exploring ggplot2 using `qplot`
-
-We'll start by using `qplot`. `qplot` is the easy interface, meant to replace `plot`. You can give it simple `qplot(x,y)` examples, or slightly more complex examples like `qplot(x, y, col=grp, data=d)` (`col` sets the color, `data` pulls from a dataframe). 
-
 We're going to be using the `diamonds` dataset. This is a set of measurements of diamonds, along with their price etc.
 
 ```{r}
 head(diamonds)
 ```
 
-Try making a scatter plot of diamonds' carats (`diamonds$carat`) plotted by their price (`diamonds$price`) using `qplot`. 
+# Simple ggplots
+
+Remember, the three minimal things you need for a ggplot are:
+
+1. a `ggplot()` call with the data frame as your first argument. 
+2. an aesthetic `aes()` statement within that ggplot call to set up the  mappings of visual variables to variables in the data frame.
+3. a geometric layer to turn that mapping into marks on the plot, e.g. `geom_point(). 
+
+First let's try making a scatter plot of diamonds' carats  plotted by their price.
 
 ```{r}
-qplot(...)
+ggplot(diamonds, aes(x = carat, y = price)) + 
+  geom_point()
 ```
 
-Now make a histogram of prices.
+Now visualize the `clarity` variable, mapping it onto point color. Hint: add color to the aesthetic. 
 
 ```{r}
-qplot(...)
-```
-
-
-Scatter plots are trivial to make and also easy to add features to. Modify this plot so that it uses the dataframe `diamonds` rather than working from variables in the general namespace (good to get away from retyping `diamonds$` every time you reference a variable). 
-
-```{r}
-qplot(...)
-```
-
-Try adding clarity and cut, using shape and color as your visual variables (these are just arguments to the qplot function). 
-
-```{r}
-qplot(data = diamonds, 
-      ...)
+...
 ```
 
 
-# More complex with `ggplot`
 
-`ggplot` is just a way of building `qplot` calls up more systematically. It's
-sometimes easier to use and sometimes a bit more complicated. What I want to show off here is the functionality of being able to build up complex plots with multiple elements. You can actually do this using `qplot` pretty easily, but there are a few things that are hard to do. 
+# Building more complex plots
 
-`ggplot` is the basic call, where you specify A) a dataframe and B) an aesthetic (`aes`) mapping from variables in the plot space to variables in the dataset. 
+ggplot allows you to use the `+` operator to add objects together into a plot. Then calling that plot (here `p`) actually renders the plot.
 
 ```{r}
 p <- ggplot(diamonds, aes(x=carat, y=price)) # first you set the aesthetic and dataset
-p <- p + geom_point() # then you add geoms
 
-p <- p + geom_point(aes(colour = carat)) # and you can keep doing this to add layers to the plot
+p <- p + geom_point(aes(color = clarity)) # and you can  add layers to the plot
 
 p
 ```
 
-Try writing this as a single set of additions (e.g. one line of R code, though you can put in linebreaks). This is the most common workflow for me. 
-
-
-```{r}
-ggplot(diamonds, aes(x = carat, y = price)) + 
-  geom_point(aes(colour = carat))
-```
-
+Try writing this same plot as a single set of additions (e.g. one line of R code, though you can put in linebreaks). 
 
 ```{r}
-ggplot(diamonds, aes(x = clarity, y = price)) + 
-  geom_jitter(alpha = .01) + 
-  stat_summary(fun.data = "mean_cl_boot", col = "red")
+...
 ```
 
+Now let's try adding some extra bits to the plot. First we'll add a smoothing line. Take the plot above and add a `geom_smooth` layer.  
 
+```{r}
+...
+```
+
+We can also make use of transparency to make the points more readable. Try adding something to this same plot by changing the `alpha` value for the points by adding `alpha=.02` to your `geom_point` call. Try some different alpha values (bigger and smaller) to see what they do.
+
+```{r}
+...
+```
+
+See how this makes your plot look different?
 
 # Facets
 
-Let's try out another version of the `qplot` example above. Rewrite the last qplot example with ggplot.
+One of the primary benefits of `ggplot2` is the use of facets - also known as "small multiples." 
+
+Let's take your plot above, but let's break it up into many small multiples based on the clarity. 
+
+We can do this with the command `facet_wrap()`. You can write `facet_wrap(vars(x))` if you want to create facets by breaking down the data on variable `x`. 
+
 
 ```{r}
-ggplot(diamonds, aes(x = carat, y = price)) + 
-  geom_point(aes(colour = clarity))
+...
 ```
 
-One of the primary benefits of `ggplot2` is the use of facets - also known as small multiples in the Tufte vocabulary. That last plot was probably hard to read. Facets could make it better. Try adding `facet_grid(x ~ y)`.  `x ~ y` means row facets are by `x`, column facets by `y`. 
+You can also use `facet_grid(vars(x, y))` to amke a grid of small facets based on variables `x` and `y`. Try doing this for `color` and `clarity`.
+
 
 ```{r}
-ggplot(diamonds, aes(x = carat, y = price)) + 
-  geom_point(aes(colour = clarity), alpha = .1) + 
-  facet_grid(cut~color) 
-
-```
-
-But facets can also get overwhelming. Try to strike a good balance between color, shape, and faceting.
-
-HINT: `facet_grid(. ~ x)` puts x on the columns, but `facet_wrap(~ x)` (no dot) *wraps* the facets. 
-
-```{r}
-ggplot(diamonds, 
-      aes(x = carat, y = price)) +
-  geom_point(aes( color = clarity)) + 
-  geom_smooth(method="lm") + 
-  ... 
+...
 ```
 
 
@@ -120,21 +101,43 @@ ggplot(diamonds,
 
 As you've seen above, the basic unit of a ggplot plot is a "geom" - a mapping between data (via an "aesthetic") and a particular geometric configuration on coordinate axes. 
 
-Let's try adding some geoms and manipulating their parameters. One combo I really like is a scatterplot with a smoothing layer (`geom_smooth`). Try adding one onto this plot. 
+Let's try working with some summary data now. 
 
 ```{r}
-ggplot(diamonds, aes(x=carat, y=price)) +
-  geom_point(shape = ".") +
-  ... + 
-  facet_grid(cut ~ clarity) 
+diamonds_summary <- diamonds |>
+  mutate(carat_bin = ceiling(carat * 4)/4) |> # bin by .25
+  group_by(carat_bin, cut, color, clarity) |>
+  summarise(price = mean(price),
+            n = n(), 
+            ci = 1.96 * sd(price) / sqrt(n()))
+```
+
+Now let's plot the summary for each bin.
+
+```{r}
+ggplot(diamonds_summary, aes(x = carat_bin, y = price)) + 
+  geom_point() 
+```
+
+Let's add some structure to this plot: use visual variable mappings and facets to show some or all of the variables `cut`, `clarity`, and `price`. 
+
+```{r}
+...
+```
+
+CHALLENGE PROBLEM 1: can you plot error bars on each summary? I've given you a `ci` for each obseration in the data frame. 
+
+```{r}
+...
 ```
 
 
-CHALLENGE: You could also try starting with a histogram and adding densities. (`geom_density`), Try [this link](https://stackoverflow.com/questions/5688082/ggplot2-overlay-histogram-with-density-curve).
+CHALLENGE PROBLEM 2: can you show the amount of data in each bin visually using the `n` variable?
 
 ```{r}
-
+...
 ```
+
 
 # Themes and plot cleanup
 
@@ -146,7 +149,7 @@ You can also try transparency/different point sizes to clean up scatterplots. Tr
 
 Finally, don't forget to "fix the axis labels"! 
 
-Here's a somewhat ugly plot - see if you can make it look awesome. 
+Here's a "fine" (ugly) plot - see if you can make it look awesome. 
 
 ```{r}
 ggplot(diamonds, aes(x = carat, y = price, 
