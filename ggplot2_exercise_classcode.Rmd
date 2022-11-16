@@ -1,0 +1,204 @@
+---
+title: 'ggplot2 intro exercise'
+author: "Mike Frank"
+date: "November 16, 2022"
+output: html_document
+---
+  
+This is an in-class exercise on using `ggplot2`.
+
+Note, that this example is from the_grammar.R on [http://had.co.nz/ggplot2](). I've adapted this for psych 251 purposes.
+
+First install and load the package. It's part of the "core tidvyerse".
+
+```{r}
+library(tidyverse)
+```
+
+We're going to be using the `diamonds` dataset. This is a set of measurements of diamonds, along with their price etc.
+
+```{r}
+head(diamonds)
+```
+
+# Simple ggplots
+
+Remember, the three minimal things you need for a ggplot are:
+
+1. a `ggplot()` call with the data frame as your first argument. 
+2. an aesthetic `aes()` statement within that ggplot call to set up the  mappings of visual variables to variables in the data frame.
+3. a geometric layer to turn that mapping into marks on the plot, e.g. `geom_point()`. 
+
+First let's try making a scatter plot of diamonds' carats  plotted by their price.
+
+```{r}
+ggplot(diamonds, aes(x = carat, y = price)) + 
+  geom_point()
+```
+
+Now visualize the `clarity` variable, mapping it onto point color. Hint: add color to the aesthetic. 
+
+```{r}
+ggplot(diamonds, aes(x = carat, y = price)) + 
+  geom_point(aes(color = clarity)) + 
+  geom_smooth()
+```
+
+# Building more complex plots
+
+ggplot allows you to use the `+` operator to add objects together into a plot. Then calling that plot (here `p`) actually renders the plot.
+
+```{r}
+p <- ggplot(diamonds, aes(x=carat, y=price)) # first you set the aesthetic and dataset
+
+p <- p + geom_point(aes(color = clarity)) # and you can  add layers to the plot
+
+p
+```
+
+Try writing this same plot as a single set of additions (e.g. one line of R code, though you can put in linebreaks). 
+
+```{r}
+3 + 7
+```
+
+
+```{r}
+ggplot(diamonds, aes(x=carat, y=price)) + 
+  geom_point(aes(color = clarity)) 
+```
+
+Now let's try adding some extra bits to the plot. First we'll add a smoothing line. Take the plot above and add a `geom_smooth` layer.  
+
+```{r}
+ggplot(diamonds, aes(x=carat, y=price, color = clarity)) + 
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+
+We can also make use of transparency to make the points more readable. Try adding something to this same plot by changing the `alpha` value for the points by adding `alpha=.02` to your `geom_point` call. Try some different alpha values (bigger and smaller) to see what they do.
+
+```{r}
+ggplot(diamonds, aes(x=carat, y=price, color = clarity)) + 
+  geom_point(alpha = .1) # pch = "." 
+```
+
+See how this makes your plot look different?
+
+# Facets
+
+One of the primary benefits of `ggplot2` is the use of facets - also known as "small multiples." 
+
+Let's take your plot above, but let's break it up into many small multiples based on the clarity. 
+
+We can do this with the command `facet_wrap()`. You can write `facet_wrap(vars(x))` if you want to create facets by breaking down the data on variable `x`. 
+
+
+```{r}
+ggplot(diamonds, aes(x = carat, y = price, color = clarity)) + 
+  geom_point(size = .5) +
+  facet_grid(color ~ cut) + 
+  geom_smooth(method = "lm", se = FALSE, size = .5) + 
+  xlab("Weight (carats)") + 
+  ylab("Price ($)")
+```
+
+You can also use `facet_grid(vars(x, y))` to amke a grid of small facets based on variables `x` and `y`. Try doing this for `color` and `clarity`.
+
+
+```{r}
+...
+```
+
+
+# Geoms
+
+As you've seen above, the basic unit of a ggplot plot is a "geom" - a mapping between data (via an "aesthetic") and a particular geometric configuration on coordinate axes. 
+
+Let's try working with some summary data now. 
+
+```{r}
+diamonds_summary <- diamonds |>
+  mutate(carat_bin = ceiling(carat * 4)/4) |> # bin by .25
+  group_by(carat_bin, color, clarity) |>
+  summarise(n = n(), 
+            ci = 1.96 * sd(price) / sqrt(n), 
+            price = mean(price))
+
+View(diamonds_summary)
+```
+
+Now let's plot the summary for each bin.
+
+```{r}
+ggplot(diamonds_summary, aes(x = carat_bin, y = price)) + 
+  geom_point() 
+```
+
+Let's add some structure to this plot: use visual variable mappings and facets to show some or all of the variables `cut`, `clarity`, and `price`. 
+
+```{r}
+ggplot(diamonds_summary, aes(x = carat_bin, y = price, color = clarity)) + 
+  geom_point() + 
+  geom_smooth() + 
+  facet_wrap(~clarity)
+```
+
+CHALLENGE PROBLEM 1: can you plot error bars on each summary? I've given you a `ci` for each observation in the data frame. 
+
+```{r}
+diamonds_summary <- diamonds |>
+  mutate(carat_bin = ceiling(carat * 4)/4) |> # bin by .25
+  group_by(carat_bin, clarity) |>
+  summarise(n = n(), 
+            ci = 1.96 * sd(price) / sqrt(n), 
+            price = mean(price))
+
+ggplot(diamonds_summary, 
+       aes(x = carat_bin, y = price, color = clarity)) + 
+  geom_pointrange(aes(ymin = price - ci, ymax = price + ci), size = .1) + 
+  geom_smooth() + 
+  facet_wrap(~clarity)
+```
+
+
+CHALLENGE PROBLEM 2: can you show the amount of data in each bin visually using the `n` variable?
+
+```{r}
+ggplot(diamonds_summary, 
+       aes(x = carat_bin, y = price, color = clarity)) + 
+  geom_point(aes(size = n)) + 
+  geom_linerange(aes(ymin = price - ci, ymax = price + ci)) + 
+  geom_smooth() + 
+  facet_wrap(~clarity)
+```
+
+
+# Themes and plot cleanup
+
+I like a slightly cleaner look to my plots. Luckily, ggplot allows you to add "themes" to your plots. Try doing the same plot but adding `+ theme_bw()` or `+ theme_classic()`. Different themes work better for different applications, in my experience. 
+
+You can also try different color scales. Experiment with `scale_color_...` - try writing that and hitting TAB for autocomplete options. Check out the help on this. 
+
+You can also try transparency/different point sizes to clean up scatterplots. Try `alpha = .1` or `pch = "."` to make transparent or small points. 
+
+Finally, don't forget to "fix the axis labels"! 
+
+Here's a "fine" (ugly) plot - see if you can make it look awesome. 
+
+```{r}
+ggplot(diamonds, aes(x = carat, y = price, 
+                     col = cut)) + 
+  geom_point() + 
+  facet_wrap(~clarity) 
+```
+
+Now you try it:
+
+```{r}
+ggplot(diamonds, aes(x = carat, y = price, 
+                     col = cut)) + 
+  geom_point() + 
+  facet_wrap(~clarity) +
+  ggthemes::theme_few()
+```
