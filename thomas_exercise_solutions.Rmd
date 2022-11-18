@@ -80,7 +80,9 @@ k1_summary <- k1_df %>%
 
 ggplot(k1_summary, aes(x = treat, y = vid.num, fill = treat)) +
   geom_bar(stat = "identity") + 
-  geom_linerange(aes(ymin = vid.num - ci, ymax = vid.num + ci))
+  geom_linerange(aes(ymin = vid.num - ci, ymax = vid.num + ci)) + 
+  ggthemes::theme_few() + 
+  ggthemes::scale_fill_solarized(name = "Condition")
 ```
 
 Now epeat this code to make Figure 1b (left side) for `sel.score.avg`. 
@@ -94,7 +96,9 @@ k1_summary <- k1_df %>%
 
 ggplot(k1_summary, aes(x = treat, y = sel.score.avg, fill = treat)) +
   geom_bar(stat = "identity") + 
-  geom_linerange(aes(ymin = sel.score.avg - ci, ymax = sel.score.avg + ci))
+  geom_linerange(aes(ymin = sel.score.avg - ci, ymax = sel.score.avg + ci)) +
+  ggthemes::theme_few() + 
+  ggthemes::scale_fill_solarized(name = "Condition")
 ```
 # Show the distribution of data
 
