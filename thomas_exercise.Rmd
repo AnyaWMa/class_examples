@@ -65,9 +65,12 @@ ggplot(k1_df, aes(x = ...)) +
 
 # Reproduce main analysis
 
-Reproduce the behavioral result that `vid.num` is influenced by `treat`! (Figure 1a in the paper).
+Let's try to reproduce Figures 1A and 1B from the paper, pasted below:
+```{r}
+include_graphics('data/thomas_exercise_fig.png')
+```
 
-Build out this simple stub code. 
+First, we'll reproduce the behavioral result that `vid.num` is influenced by `treat`! (Figure 1A). Build out this simple stub code.  
 
 ```{r}
 k1_summary <- k1_df |>
@@ -77,7 +80,7 @@ k1_summary <- k1_df |>
 ggplot(k1_summary, ...) 
 ```
 
-Now repeat this code to make Figure 1b (left side) for `sel.score.avg`. 
+Next, repeat this code to make Figure 1B for `sel.score.avg`. 
 
 ```{r}
 ...

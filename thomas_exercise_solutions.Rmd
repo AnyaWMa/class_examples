@@ -22,7 +22,11 @@ Repository: [https://osf.io/v3cr4/]()
 This is an example of a pretty nicely organized repository that includes a readme, a great codebook, all code and data, etc. 
 
 ```{r}
+library(knitr)
 library(tidyverse)
+
+theme_set(theme_classic())
+          
 load("data/KenyaData.RData")
 ```
 
@@ -54,13 +58,15 @@ k1_df$sel.score.z <- scale(k1_df$sel.score)
 Always good to make histograms of the dependent variables (`sel.score.avg` and `vid.num`)! Use facets, fills, etc. to try and explore how these relate to treatment. 
 
 ```{r}
-ggplot(k1_df, aes(x = sel.score.avg)) + 
+ggplot(data = k1_df,
+       aes(x = sel.score.avg)) + 
   geom_histogram() + 
   facet_wrap(~treat)
 ```
 
 ```{r}
-ggplot(k1_df, aes(x = vid.num)) + 
+ggplot(data = k1_df,
+       aes(x = vid.num)) + 
   geom_histogram() + 
   facet_wrap(~treat)
 ```
@@ -68,9 +74,13 @@ ggplot(k1_df, aes(x = vid.num)) +
 
 # Reproduce main analysis
 
-Reproduce the behavioral result that `vid.num` is influenced by `treat`! (Figure 1a in the paper).
+Let's try to reproduce Figures 1A and 1B from the paper, pasted below:
+```{r}
+include_graphics('data/thomas_exercise_fig.png')
+```
 
-Build out this simple stub code. 
+
+First, we'll reproduce the behavioral result that `vid.num` is influenced by `treat`! (Figure 1A). Build out this simple stub code. 
 
 ```{r}
 k1_summary <- k1_df %>%
@@ -78,15 +88,40 @@ k1_summary <- k1_df %>%
   summarise(ci = 1.96 * sd(vid.num) / sqrt(n()),
             vid.num = mean(vid.num))
 
-ggplot(k1_summary, aes(x = treat, y = vid.num, fill = treat)) +
+plot_1a = ggplot(data = k1_summary,
+                 aes(x = treat,
+                     y = vid.num,
+                     fill = treat)) +
   geom_bar(stat = "identity") + 
-  geom_linerange(aes(ymin = vid.num - ci, ymax = vid.num + ci)) + 
-  ggthemes::theme_few() + 
-  ggthemes::scale_fill_solarized(name = "Condition")
+  geom_errorbar(aes(ymin = vid.num - ci,
+                    ymax = vid.num + ci),
+                width = 0.2,
+                size = 1) +
+  ggtitle('Economic Behavior\n Skills building') +
+  theme(text = element_text(size = 14),
+        legend.position = 'None',
+        legend.title = element_blank(),
+        axis.title.x = element_blank(),
+        axis.text.x = element_text(size = 9),
+        axis.ticks.x = element_blank(),
+        strip.background = element_blank(),
+        strip.text = element_blank(),
+        panel.grid.major.y = element_line(linetype = 'dashed',
+                                          color = 'darkgray')) +
+  scale_fill_manual(values = c('Pov' = 'lightgray',
+                               'Ind' = 'skyblue3',
+                               'Com' = 'coral2')) +
+  scale_x_discrete(labels = c('Pov' = 'Poverty\nAlleviation',
+                              'Ind' = 'Individual\nEmpowerment',
+                              'Com' = 'Community\nEmpowerment')) +
+  scale_y_continuous(name = 'No. of videos (0-2)',
+                     breaks = seq(1.0, 1.8, 0.2)) +
+  coord_cartesian(ylim = c(1, 1.75))
+
+# plot_1a
 ```
 
-Now epeat this code to make Figure 1b (left side) for `sel.score.avg`. 
-
+Next, repeat this code to make Figure 1B for `sel.score.avg`. 
 
 ```{r}
 k1_summary <- k1_df %>%
@@ -94,28 +129,80 @@ k1_summary <- k1_df %>%
   summarise(ci = 1.96 * sd(sel.score.avg) / sqrt(n()),
             sel.score.avg = mean(sel.score.avg))
 
-ggplot(k1_summary, aes(x = treat, y = sel.score.avg, fill = treat)) +
+plot_1b = ggplot(data = k1_summary,
+                 aes(x = treat,
+                     y = sel.score.avg,
+                     fill = treat)) +
   geom_bar(stat = "identity") + 
-  geom_linerange(aes(ymin = sel.score.avg - ci, ymax = sel.score.avg + ci)) +
-  ggthemes::theme_few() + 
-  ggthemes::scale_fill_solarized(name = "Condition")
+  geom_errorbar(aes(ymin = sel.score.avg - ci,
+                    ymax = sel.score.avg + ci),
+                width = 0.2,
+                size = 1) +
+  ggtitle('Psychological Outcomes\n Self-efficacy') +
+  theme(text = element_text(size = 14),
+        legend.position = 'None',
+        legend.title = element_blank(),
+        axis.title.x = element_blank(),
+        axis.text.x = element_text(size = 9),
+        axis.ticks.x = element_blank(),
+        strip.background = element_blank(),
+        strip.text = element_blank(),
+        panel.grid.major.y = element_line(linetype = 'dashed',
+                                          color = 'darkgray')) +
+  scale_fill_manual(values = c('Pov' = 'lightgray',
+                               'Ind' = 'skyblue3',
+                               'Com' = 'coral2')) +
+  scale_x_discrete(labels = c('Pov' = 'Poverty\nAlleviation',
+                              'Ind' = 'Individual\nEmpowerment',
+                              'Com' = 'Community\nEmpowerment')) +
+  scale_y_continuous(name = 'Self-rating (1-5)',
+                     breaks = seq(3.0, 3.8, 0.2)) +
+  coord_cartesian(ylim = c(3, 3.75))
+
+# plot_1b
 ```
+
+Bonus: we can use the `patchwork` library to put the plots side-by-side:
+```{r}
+library(patchwork)
+
+plot_1a + plot_1b + plot_annotation(tag_levels = 'A')
+```
+
+
 # Show the distribution of data
 
 Think about how you could show the distribution of data for the `sel.score.avg` figure in a way that helps with the interpretation. 
 
 ```{r}
-ggplot(k1_summary, aes(x = treat, y = sel.score.avg)) +
-  geom_jitter(data = k1_df, aes(x = treat, y = sel.score.avg), 
-              width = .1,
-              alpha = .1) + 
+ggplot(data = k1_summary,
+       aes(x = treat,
+           y = sel.score.avg)) +
+  geom_jitter(data = data = k1_df,
+              aes(x = treat,
+                  y = sel.score.avg,
+                  color = treat), 
+              width = 0.1,
+              alpha = 0.2) + 
   geom_pointrange(aes(ymin = sel.score.avg - ci, 
                       ymax = sel.score.avg + ci, 
                       col = treat)) + 
-  xlab("Treatment condition") +
-  ylab("Self-efficacy score") +
-  ggthemes::theme_few() + 
-  ggthemes::scale_color_solarized(name = "Condition")
+  theme(text = element_text(size = 14),
+        legend.position = 'None',
+        legend.title = element_blank(),
+        axis.title.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        strip.background = element_blank(),
+        strip.text = element_blank(),
+        panel.grid.major.y = element_line(linetype = 'dashed',
+                                          color = 'darkgray')) +
+  scale_color_manual(values = c('Pov' = 'darkgray',  # made it darker
+                                'Ind' = 'skyblue3',
+                                'Com' = 'coral2')) +
+  scale_x_discrete(labels = c('Pov' = 'Poverty Alleviation',
+                              'Ind' = 'Individual Empowerment',
+                              'Com' = 'Community Empowerment')) +
+  scale_y_continuous(name = 'Self-efficacy score')
 ```
 
 # Exploratory analysis
@@ -129,23 +216,50 @@ Consider exploratory analysis of demographic variables and how they relate to th
 * `soc.inc` = income
 
 ```{r}
-ggplot(k1_df, aes(x = soc.age, y = sel.score.avg, col = treat)) +
-  geom_point(alpha = .1) + 
+ggplot(data = k1_df,
+       aes(x = soc.age,
+           y = sel.score.avg,
+           col = treat)) +
+  geom_point(alpha = 0.2) + 
   geom_smooth(method = "lm") + 
-  xlab("Age") +
-  ylab("Self-efficacy score") +
-  ggthemes::theme_few() + 
-  ggthemes::scale_color_solarized(name = "Condition")
+  theme(text = element_text(size = 14),
+        legend.position = 'bottom',
+        legend.direction = 'horizontal',
+        legend.title = element_blank(),
+        strip.background = element_blank(),
+        strip.text = element_blank(),
+        panel.grid.major.y = element_line(linetype = 'dashed',
+                                          color = 'darkgray')) +
+  scale_color_manual(values = c('Pov' = 'darkgray',  # made it darker
+                                'Ind' = 'skyblue3',
+                                'Com' = 'coral2'),
+                     labels = c('Pov' = 'Poverty Alleviation',
+                                'Ind' = 'Individual Empowerment',
+                                'Com' = 'Community Empowerment')) +
+  scale_x_continuous(name = 'Age') +
+  scale_y_continuous(name = 'Self-efficacy score')
 ```
 
 and 
 
 ```{r}
 ggplot(k1_df, aes(x = soc.inc, y = sel.score.avg, col = treat)) +
-  geom_point(alpha = .1) + 
+  geom_point(alpha = 0.2) + 
   geom_smooth(method = "lm") + 
-  xlab("Income") +
-  ylab("Self-efficacy score") +
-  ggthemes::theme_few() + 
-  ggthemes::scale_color_solarized(name = "Condition")
+  theme(text = element_text(size = 14),
+        legend.position = 'bottom',
+        legend.direction = 'horizontal',
+        legend.title = element_blank(),
+        strip.background = element_blank(),
+        strip.text = element_blank(),
+        panel.grid.major.y = element_line(linetype = 'dashed',
+                                          color = 'darkgray')) +
+  scale_color_manual(values = c('Pov' = 'darkgray',  # made it darker
+                                'Ind' = 'skyblue3',
+                                'Com' = 'coral2'),
+                     labels = c('Pov' = 'Poverty Alleviation',
+                                'Ind' = 'Individual Empowerment',
+                                'Com' = 'Community Empowerment')) +
+  scale_x_continuous(name = 'Income') +
+  scale_y_continuous(name = 'Self-efficacy score')
 ```
