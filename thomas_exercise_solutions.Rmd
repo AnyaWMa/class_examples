@@ -24,24 +24,22 @@ This is an example of a pretty nicely organized repository that includes a readm
 ```{r}
 library(tidyverse)
 load("data/KenyaData.RData")
-
-k1_df <- tibble(k1_df)
 ```
 
-Key variables are `treat` (treatment condition), `vid.num`, and various psychological treatments. We'll focus on videos and self-efficacy.
+Key variables are `treat` (treatment condition), `vid.num`, and various psychological treatments. We'll focus on self-efficacy.
 
 Let's make the appropriate composite for self-efficacy, copied from their code:
 
 ```{r}
 scale.means = function (df, ..., na.rm=FALSE) {
-  vars = unlist(list(...))
-  mean_vars = rowMeans(df[,vars], na.rm=na.rm)
-  return(mean_vars)
+    vars = unlist(list(...))
+    mean_vars = rowMeans(df[,vars], na.rm=na.rm)
+    return(mean_vars)
 }
 
 for (var in c(k1_df$sel.con, k1_df$sel.pers, k1_df$sel.com, 
               k1_df$sel.prob, k1_df$sel.bett)) {
-  var[var < 0] <- NA
+    var[var < 0] <- NA
 }
 
 k1_df$sel.score.avg <- scale.means(k1_df, "sel.con", "sel.pers", "sel.com", 
@@ -56,10 +54,15 @@ k1_df$sel.score.z <- scale(k1_df$sel.score)
 Always good to make histograms of the dependent variables (`sel.score.avg` and `vid.num`)! Use facets, fills, etc. to try and explore how these relate to treatment. 
 
 ```{r}
-ggplot(k1_df, aes(x = ...)) + 
-  geom_histogram() 
+ggplot(k1_df, aes(x = sel.score.avg)) + 
+  geom_histogram() + 
+  facet_wrap(~treat)
+```
 
-# try some faceting, e.g. facet_wrap(~treat)
+```{r}
+ggplot(k1_df, aes(x = vid.num)) + 
+  geom_histogram() + 
+  facet_wrap(~treat)
 ```
 
 
@@ -70,29 +73,46 @@ Reproduce the behavioral result that `vid.num` is influenced by `treat`! (Figure
 Build out this simple stub code. 
 
 ```{r}
-k1_summary <- k1_df |>
+k1_summary <- k1_df %>%
   group_by(treat) |>
-  summarise(...) 
+  summarise(ci = 1.96 * sd(vid.num) / sqrt(n()),
+            vid.num = mean(vid.num))
 
-ggplot(k1_summary, ...) 
+ggplot(k1_summary, aes(x = treat, y = vid.num, fill = treat)) +
+  geom_bar(stat = "identity") + 
+  geom_linerange(aes(ymin = vid.num - ci, ymax = vid.num + ci))
 ```
 
-Now repeat this code to make Figure 1b (left side) for `sel.score.avg`. 
+Now epeat this code to make Figure 1b (left side) for `sel.score.avg`. 
+
 
 ```{r}
-...
+k1_summary <- k1_df %>%
+  group_by(treat) |>
+  summarise(ci = 1.96 * sd(sel.score.avg) / sqrt(n()),
+            sel.score.avg = mean(sel.score.avg))
+
+ggplot(k1_summary, aes(x = treat, y = sel.score.avg, fill = treat)) +
+  geom_bar(stat = "identity") + 
+  geom_linerange(aes(ymin = sel.score.avg - ci, ymax = sel.score.avg + ci))
 ```
-
-Note that it's actually tricky to truncate the y axis for a barplot with ggplot (you can do it but it takes work!).
-
 # Show the distribution of data
 
 Think about how you could show the distribution of data for the `sel.score.avg` figure in a way that helps with the interpretation. 
 
 ```{r}
-...
+ggplot(k1_summary, aes(x = treat, y = sel.score.avg)) +
+  geom_jitter(data = k1_df, aes(x = treat, y = sel.score.avg), 
+              width = .1,
+              alpha = .1) + 
+  geom_pointrange(aes(ymin = sel.score.avg - ci, 
+                      ymax = sel.score.avg + ci, 
+                      col = treat)) + 
+  xlab("Treatment condition") +
+  ylab("Self-efficacy score") +
+  ggthemes::theme_few() + 
+  ggthemes::scale_color_solarized(name = "Condition")
 ```
-
 
 # Exploratory analysis
 
@@ -105,5 +125,23 @@ Consider exploratory analysis of demographic variables and how they relate to th
 * `soc.inc` = income
 
 ```{r}
-...
+ggplot(k1_df, aes(x = soc.age, y = sel.score.avg, col = treat)) +
+  geom_point(alpha = .1) + 
+  geom_smooth(method = "lm") + 
+  xlab("Age") +
+  ylab("Self-efficacy score") +
+  ggthemes::theme_few() + 
+  ggthemes::scale_color_solarized(name = "Condition")
+```
+
+and 
+
+```{r}
+ggplot(k1_df, aes(x = soc.inc, y = sel.score.avg, col = treat)) +
+  geom_point(alpha = .1) + 
+  geom_smooth(method = "lm") + 
+  xlab("Income") +
+  ylab("Self-efficacy score") +
+  ggthemes::theme_few() + 
+  ggthemes::scale_color_solarized(name = "Condition")
 ```

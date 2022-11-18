@@ -27,7 +27,7 @@ Remember, the three minimal things you need for a ggplot are:
 
 1. a `ggplot()` call with the data frame as your first argument. 
 2. an aesthetic `aes()` statement within that ggplot call to set up the  mappings of visual variables to variables in the data frame.
-3. a geometric layer to turn that mapping into marks on the plot, e.g. `geom_point(). 
+3. a geometric layer to turn that mapping into marks on the plot, e.g. `geom_point()`. 
 
 First let's try making a scatter plot of diamonds' carats  plotted by their price.
 
@@ -39,10 +39,10 @@ ggplot(diamonds, aes(x = carat, y = price)) +
 Now visualize the `clarity` variable, mapping it onto point color. Hint: add color to the aesthetic. 
 
 ```{r}
-...
+ggplot(diamonds, aes(x = carat, y = price)) + 
+  geom_point(aes(color = clarity)) + 
+  geom_smooth()
 ```
-
-
 
 # Building more complex plots
 
@@ -59,19 +59,28 @@ p
 Try writing this same plot as a single set of additions (e.g. one line of R code, though you can put in linebreaks). 
 
 ```{r}
-...
+3 + 7
+```
+
+
+```{r}
+ggplot(diamonds, aes(x=carat, y=price)) + 
+  geom_point(aes(color = clarity)) 
 ```
 
 Now let's try adding some extra bits to the plot. First we'll add a smoothing line. Take the plot above and add a `geom_smooth` layer.  
 
 ```{r}
-...
+ggplot(diamonds, aes(x=carat, y=price, color = clarity)) + 
+  geom_point() +
+  geom_smooth(method = "lm")
 ```
 
 We can also make use of transparency to make the points more readable. Try adding something to this same plot by changing the `alpha` value for the points by adding `alpha=.02` to your `geom_point` call. Try some different alpha values (bigger and smaller) to see what they do.
 
 ```{r}
-...
+ggplot(diamonds, aes(x=carat, y=price, color = clarity)) + 
+  geom_point(alpha = .1) # pch = "." 
 ```
 
 See how this makes your plot look different?
@@ -86,7 +95,12 @@ We can do this with the command `facet_wrap()`. You can write `facet_wrap(vars(x
 
 
 ```{r}
-...
+ggplot(diamonds, aes(x = carat, y = price, color = clarity)) + 
+  geom_point(size = .5) +
+  facet_grid(color ~ cut) + 
+  geom_smooth(method = "lm", se = FALSE, size = .5) + 
+  xlab("Weight (carats)") + 
+  ylab("Price ($)")
 ```
 
 You can also use `facet_grid(vars(x, y))` to amke a grid of small facets based on variables `x` and `y`. Try doing this for `color` and `clarity`.
@@ -106,10 +120,12 @@ Let's try working with some summary data now.
 ```{r}
 diamonds_summary <- diamonds |>
   mutate(carat_bin = ceiling(carat * 4)/4) |> # bin by .25
-  group_by(carat_bin, cut, color, clarity) |>
-  summarise(price = mean(price),
-            n = n(), 
-            ci = 1.96 * sd(price) / sqrt(n()))
+  group_by(carat_bin, color, clarity) |>
+  summarise(n = n(), 
+            ci = 1.96 * sd(price) / sqrt(n), 
+            price = mean(price))
+
+View(diamonds_summary)
 ```
 
 Now let's plot the summary for each bin.
@@ -122,20 +138,39 @@ ggplot(diamonds_summary, aes(x = carat_bin, y = price)) +
 Let's add some structure to this plot: use visual variable mappings and facets to show some or all of the variables `cut`, `clarity`, and `price`. 
 
 ```{r}
-...
+ggplot(diamonds_summary, aes(x = carat_bin, y = price, color = clarity)) + 
+  geom_point() + 
+  geom_smooth() + 
+  facet_wrap(~clarity)
 ```
 
-CHALLENGE PROBLEM 1: can you plot error bars on each summary? I've given you a `ci` for each obseration in the data frame. 
+CHALLENGE PROBLEM 1: can you plot error bars on each summary? I've given you a `ci` for each observation in the data frame. 
 
 ```{r}
-...
+diamonds_summary <- diamonds |>
+  mutate(carat_bin = ceiling(carat * 4)/4) |> # bin by .25
+  group_by(carat_bin, clarity) |>
+  summarise(n = n(), 
+            ci = 1.96 * sd(price) / sqrt(n), 
+            price = mean(price))
+
+ggplot(diamonds_summary, 
+       aes(x = carat_bin, y = price, color = clarity)) + 
+  geom_pointrange(aes(ymin = price - ci, ymax = price + ci), size = .1) + 
+  geom_smooth() + 
+  facet_wrap(~clarity)
 ```
 
 
 CHALLENGE PROBLEM 2: can you show the amount of data in each bin visually using the `n` variable?
 
 ```{r}
-...
+ggplot(diamonds_summary, 
+       aes(x = carat_bin, y = price, color = clarity)) + 
+  geom_point(aes(size = n)) + 
+  geom_linerange(aes(ymin = price - ci, ymax = price + ci)) + 
+  geom_smooth() + 
+  facet_wrap(~clarity)
 ```
 
 
