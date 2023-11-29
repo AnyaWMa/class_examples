@@ -13,6 +13,7 @@ Packages needed for the class example.
 library(tidyverse)
 library(metafor)
 library(here)
+theme_set(theme_bw())
 ```
 
 You'd need to run this next chunk if you wanted to re-download the data from MetaLab, which would also mean installing the `metalabr` package (commented out). 
@@ -129,3 +130,82 @@ Try asking if publication `year` is a significant meta-regressor.
 
 ```
 
+# Example for mini-metas
+
+## Find the set of results
+
+For your mini-meta, you'll already have 3 (original, replication, rescue). You'll want to look for any other direct replications of the original, but a forward citation search can help with that. 
+
+> Here we'll do a worked example on Risen and Gilovich (2008) and it's replications, which are conveniently summarized in Many Labs 5: Registered Multisite Replication of the Tempting-Fate Effects in Risen and Gilovich (2008). (https://journals.sagepub.com/doi/full/10.1177/2515245918785165#bibr2-2515245918785165)
+
+> There's the original, an RP:P, and three samples from Many Labs 5. 
+
+## Calculate effect sizes
+
+* What's the key result you're interested in -- a main condition difference, an interaction term
+
+> This paper has both -- "Risen and Gilovich (2008) found that subjects believed that “tempting fate” would be punished with ironic bad outcomes (a main effect), and that this effect was magnified when subjects were under cognitive load (an interaction)."
+
+> I'll work through the main effect. 
+
+```{r}
+raw_data <- read_csv(here("data/mini_meta_example_data.csv"))
+
+raw_data
+```
+
+Different studies had different numbers reported so you may need to standardize.
+
+However, with a mini-meta of replications, you may have everything on the same scale already. 
+
+```{r mod}
+for_mod <- raw_data |> 
+  mutate(se=(raw_high-raw_low)/(2*1.96))
+
+mini_meta_mod <- rma(yi=raw_mean, sei=se, slab=Study, data=for_mod)
+
+summary(mini_meta_mod)
+
+
+```
+```{r plot}
+aggregate <- tibble(Study="aggregate", Citation=NA,N=NA, raw_mean=mini_meta_mod$b,
+                    raw_low=mini_meta_mod$ci.lb, raw_high=mini_meta_mod$ci.ub)
+
+for_plot <- raw_data |> bind_rows(aggregate) |> mutate(Study=factor(Study, levels=c("aggregate", "ml5-dis", "ml5-sim", "ml5-mturk", "rpp", "original")))
+
+
+ggplot(for_plot,aes(x=Study,y=raw_mean,ymin=raw_low,ymax=raw_high))+
+  geom_errorbar(colour='darkgray',size=.5,width=.25)+
+  geom_point(aes(size=sqrt(N)))+
+  geom_point(data=for_plot |> filter(Study=="aggregate"), shape=18, size=4)+
+  coord_flip()+
+  geom_hline(yintercept=0,color="black")+
+  theme(legend.position = "none")+
+  labs(y="Main effect size on original scale", x="")
+```
+
+# Now try their interaction effect
+
+
+```{r}
+raw_interaction <- read_csv(here("data/mini_meta_example_data_interaction.csv"))
+
+```
+
+```{r model}
+
+
+```
+```{r plot}
+
+```
+# Tools for effect size wrangling
+
+metafor::escalc()
+
+many functions in compute.es package
+
+https://github.com/vboyce/251-254-MA/blob/main/code/helper/parse_stats.R (what I wrote for replication meta-analysis)
+
+https://github.com/AaronChuey/online_devo_metaanalysis/blob/main/scripts/compute_es.R (from people doing prep for metalab datasets)

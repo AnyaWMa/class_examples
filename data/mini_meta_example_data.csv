@@ -1,0 +1,6 @@
+Study,Citation,N,raw_mean,raw_low,raw_high
+original,Risen & Gilovich (2008),120,1.03,0.09,1.97
+rpp,Frank & Mathur (2016),226,0.2,-0.58,0.97
+ml5-mturk,Mathur et al (2020),2973,0.21,-0.01,0.44
+ml5-sim,Mathur et al (2020),754,0.11,-0.34,0.56
+ml5-dis,Mathur et al (2020),714,0.42,-0.07,0.9
