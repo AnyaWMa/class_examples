@@ -60,6 +60,7 @@ ggplot(d, aes(x = mean_age_months, y = d_calc)) +
   geom_smooth(method = "lm") + 
   xlab("Mean age (months)") + 
   ylab("Effect size (d)") + 
+  scale_size_area()+
   geom_hline(lty = 2, yintercept = 0)
 ```
 
@@ -75,7 +76,7 @@ summary(random_effects_mod)
 Investigate heterogeneity if we remove the outlier.
 
 ```{r}
-d_post_hoc_pruned <- filter(d, d_calc < 1 & d_calc > 0)
+d_post_hoc_pruned <- filter(d, d_calc < 2)
 random_effects_posthoc_mod <- rma(yi = d_calc, vi = d_var_calc, 
                           slab = short_cite, data = d_post_hoc_pruned)
 summary(random_effects_posthoc_mod)
@@ -168,20 +169,24 @@ summary(mini_meta_mod)
 
 
 ```
+
+
 ```{r plot}
-aggregate <- tibble(Study="aggregate", Citation=NA,N=NA, raw_mean=mini_meta_mod$b,
-                    raw_low=mini_meta_mod$ci.lb, raw_high=mini_meta_mod$ci.ub)
+aggregate <- tibble(Study="aggregate", Citation=NA, raw_mean=mini_meta_mod$b,
+                    raw_low=mini_meta_mod$ci.lb, raw_high=mini_meta_mod$ci.ub,N=sum(raw_data$N))
 
 for_plot <- raw_data |> bind_rows(aggregate) |> mutate(Study=factor(Study, levels=c("aggregate", "ml5-dis", "ml5-sim", "ml5-mturk", "rpp", "original")))
 
 
-ggplot(for_plot,aes(x=Study,y=raw_mean,ymin=raw_low,ymax=raw_high))+
+ggplot(for_plot,aes(x=Study,y=raw_mean,ymin=raw_low,ymax=raw_high, size=N))+
   geom_errorbar(colour='darkgray',size=.5,width=.25)+
-  geom_point(aes(size=sqrt(N)))+
-  geom_point(data=for_plot |> filter(Study=="aggregate"), shape=18, size=4)+
+  geom_point(data=for_plot |> filter(Study!="aggregate"))+
+  geom_point(data=for_plot |> filter(Study=="aggregate"),shape=18, color="red")+
   coord_flip()+
+  scale_size_area()+
   geom_hline(yintercept=0,color="black")+
   theme(legend.position = "none")+
+  geom_vline(xintercept = 1.5, lty=2)+
   labs(y="Main effect size on original scale", x="")
 ```
 
@@ -200,6 +205,7 @@ raw_interaction <- read_csv(here("data/mini_meta_example_data_interaction.csv"))
 ```{r plot}
 
 ```
+
 # Tools for effect size wrangling
 
 metafor::escalc()
